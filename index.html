@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Renan Vicente Braga · Portfólio</title>
+<style>
+:root { color-scheme: dark; --page:#0b0f19; --surface:#121826; --ink:#e8ebf1; --ink-2:#8d96aa; --accent:#338ced; --border:rgba(255,255,255,.08); }
+* { box-sizing: border-box; }
+body { margin:0; font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background: var(--page); color: var(--ink);
+  background-image: radial-gradient(1000px 500px at 10% -10%, rgba(51,140,237,.18), transparent 60%); min-height:100vh; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 56px 24px; }
+h1 { font-size: 34px; margin: 0 0 6px; letter-spacing: -.5px; }
+.sub { color: var(--ink-2); font-size: 16px; max-width: 720px; line-height: 1.5; }
+.tags { display:flex; flex-wrap:wrap; gap:8px; margin: 18px 0 40px; }
+.tags span { font-size: 12px; padding: 5px 10px; border-radius: 999px; background: rgba(51,140,237,.12); color: var(--accent); font-weight: 600; }
+.grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 18px; }
+a.card { display:block; text-decoration:none; color:inherit; background: var(--surface); border:1px solid var(--border); border-radius: 14px; overflow:hidden; transition: transform .15s, border-color .15s; }
+a.card:hover { transform: translateY(-3px); border-color: var(--accent); }
+.card img { width:100%; height: 190px; object-fit: cover; object-position: top; display:block; border-bottom: 1px solid var(--border); }
+.card .ph { height:190px; display:grid; place-items:center; font-size: 46px; border-bottom: 1px solid var(--border); background: linear-gradient(135deg, rgba(51,140,237,.15), rgba(152,135,239,.12)); }
+.card .t { padding: 14px 16px 16px; }
+.card h2 { font-size: 16px; margin: 0 0 6px; }
+.card p { font-size: 13px; color: var(--ink-2); margin: 0; line-height: 1.5; }
+footer { margin-top: 44px; color: var(--ink-2); font-size: 13px; }
+footer a { color: var(--ink); }
+</style>
+</head>
+<body><div class="wrap">
+  <h1>Renan Vicente Braga</h1>
+  <div class="sub">Controle operacional, auditoria e automação de rotinas. Transformo extrações bagunçadas e conferências manuais em painéis e processos automáticos. Todos os projetos usam dados fictícios.</div>
+  <div class="tags"><span>Excel · VBA</span><span>Power Query</span><span>Python</span><span>SQL</span><span>Looker Studio</span><span>IA generativa</span></div>
+  <div class="grid">
+    <a class="card" href="dashboard/painel-escuro.html"><img src="dashboard/painel-escuro.jpg" alt="Painel modo escuro"><div class="t"><h2>Painel de ativos em campo · escuro</h2><p>KPIs, sankey, mapa de calor e filtros cruzados entre todos os gráficos.</p></div></a>
+    <a class="card" href="dashboard/painel-claro.html"><img src="dashboard/painel-claro.jpg" alt="Painel modo claro"><div class="t"><h2>Painel de ativos em campo · claro</h2><p>Mesmo painel no tema claro, com paleta validada para daltonismo.</p></div></a>
+    <a class="card" href="https://github.com/bragarenan321-max/portfolio/tree/main/automacao-excel-vba"><div class="ph">⚙️</div><div class="t"><h2>Consolidador de relatórios (Excel/VBA)</h2><p>Une várias extrações num relatório padronizado, com conferência automática.</p></div></a>
+    <a class="card" href="https://github.com/bragarenan321-max/portfolio/tree/main/automacao-ia-python"><div class="ph">🤖</div><div class="t"><h2>Classificador com IA (Python + Claude)</h2><p>Texto livre de técnicos de campo → categoria, data prometida e ação necessária.</p></div></a>
+  </div>
+  <footer><a href="https://github.com/bragarenan321-max/portfolio">Código no GitHub</a> · <a href="https://www.linkedin.com/in/renan-braga-7530b6229">LinkedIn</a> · bragarenan321@gmail.com</footer>
+</div></body></html>

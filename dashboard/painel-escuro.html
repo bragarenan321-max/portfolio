@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Controle de Ativos em Campo · Logística Reversa</title>
+<style>
+:root {
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --radius: 12px;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0b0f19; --surface: #121826; --surface-2: #171f30;
+  --ink: #e8ebf1; --ink-2: #8d96aa; --ink-3: #5d667a;
+  --grid: #222b3d; --axis: #3a4458; --border: rgba(255,255,255,.07);
+  --accent: #338ced; --glow: rgba(51,140,237,.18);
+  --s1: #338ced; --s2: #e76624; --s3: #00a888; --s4: #d28e05; --s5: #e24d8b; --s6: #9887ef;
+  --good: #53c556; --bad: #eb6263; --critical: #dc3c3d; --warning: #fbb315;
+  --seq: #17223a,#14325e,#0f4a96,#1b64be,#257de0,#519ced,#9dc8f7;
+  --ord: #1757ac,#257de0,#519ced,#9dc8f7;
+  --chip: rgba(51,140,237,.14);
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --page: #f3f5f9; --surface: #ffffff; --surface-2: #f7f8fb;
+  --ink: #191919; --ink-2: #666666; --ink-3: #9a9a9a;
+  --grid: #e7e7e7; --axis: #c2c2c2; --border: rgba(11,11,11,.08);
+  --accent: #257de0; --glow: rgba(37,125,224,.10);
+  --s1: #257de0; --s2: #f47230; --s3: #00b894; --s4: #f2a600; --s5: #ee7fac; --s6: #6a4ce2;
+  --good: #006c10; --bad: #c62f30; --critical: #dc3c3d; --warning: #fbb315;
+  --seq: #eef5fe,#cce3fd,#9dc8f7,#6aabf1,#338ced,#1b64be,#0e3d7e;
+  --ord: #84b9f3,#338ced,#1b64be,#0e3d7e;
+  --chip: rgba(37,125,224,.10);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--page); color: var(--ink); font-family: var(--font); }
+body { padding: 20px 24px 32px; min-height: 100vh;
+  background-image: radial-gradient(1200px 500px at 10% -10%, var(--glow), transparent 60%); }
+.wrap { max-width: 1480px; margin: 0 auto; }
+
+/* topo */
+header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, var(--s1), var(--s6));
+  display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 15px; letter-spacing: .5px; }
+h1 { font-size: 20px; margin: 0; letter-spacing: -.2px; }
+.sub { color: var(--ink-2); font-size: 12.5px; margin-top: 3px; }
+.badge { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
+  color: var(--accent); background: var(--chip); padding: 3px 8px; border-radius: 999px; margin-left: 8px; vertical-align: 2px; }
+.controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+select, button { font: inherit; font-size: 12.5px; color: var(--ink); background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 10px; cursor: pointer; }
+select:hover, button:hover { border-color: var(--accent); }
+button.ghost { background: transparent; }
+.theme-btn { display: inline-flex; gap: 6px; align-items: center; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; min-height: 26px; margin-bottom: 12px; align-items: center; }
+.chip { font-size: 12px; background: var(--chip); color: var(--ink); border-radius: 999px; padding: 4px 6px 4px 10px; display: inline-flex; gap: 6px; align-items: center; }
+.chip b { color: var(--accent); font-weight: 600; }
+.chip button { border: 0; background: transparent; padding: 0 4px; color: var(--ink-2); font-size: 14px; line-height: 1; }
+.hint { color: var(--ink-3); font-size: 12px; }
+
+/* grade */
+.grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px 12px; min-width: 0; position: relative; }
+.c3 { grid-column: span 3; } .c4 { grid-column: span 4; } .c5 { grid-column: span 5; } .c7 { grid-column: span 7; } .c8 { grid-column: span 8; } .c12 { grid-column: span 12; }
+.c2 { grid-column: span 2; }
+@media (max-width: 1100px) { .c2 { grid-column: span 4; } .c5, .c7, .c4, .c8 { grid-column: span 12; } }
+@media (max-width: 640px) { .c2 { grid-column: span 6; } body { padding: 14px; } }
+.card-h { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+.card-t { font-size: 13.5px; font-weight: 650; }
+.card-s { font-size: 11.5px; color: var(--ink-2); margin-top: 2px; }
+.tbtn { font-size: 11px; padding: 4px 8px; color: var(--ink-2); background: transparent; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 11.5px; color: var(--ink-2); margin: 2px 0 6px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.viz { width: 100%; position: relative; }
+svg { display: block; overflow: visible; }
+svg text { font-family: var(--font); }
+.ax text { fill: var(--ink-2); font-size: 10.5px; font-variant-numeric: tabular-nums; }
+.gl { stroke: var(--grid); stroke-width: 1; }
+.bl { stroke: var(--axis); stroke-width: 1; }
+
+/* KPI */
+.kpi .lbl { font-size: 11.5px; color: var(--ink-2); font-weight: 600; letter-spacing: .2px; display: flex; gap: 6px; align-items: center; }
+.kpi .val { font-size: 26px; font-weight: 700; margin-top: 6px; letter-spacing: -.5px; }
+.kpi .row { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; margin-top: 4px; }
+.delta { font-size: 11.5px; font-weight: 500; }
+.delta b { color: var(--ink); font-weight: 650; }
+.delta.good { color: var(--good); } .delta.bad { color: var(--bad); } .delta.flat { color: var(--ink-2); }
+.delta small { color: var(--ink-3); font-weight: 500; }
+.dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+
+/* tabela */
+table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+th { text-align: left; color: var(--ink-2); font-weight: 600; font-size: 11px; padding: 6px 8px; border-bottom: 1px solid var(--grid); position: sticky; top: 0; background: var(--surface); }
+td { padding: 7px 8px; border-bottom: 1px solid var(--grid); }
+td.n, th.n { text-align: right; }
+tr:hover td { background: var(--surface-2); }
+.bar-cell { display: flex; align-items: center; gap: 8px; }
+.bar-cell span.b { height: 6px; border-radius: 3px; background: var(--s1); }
+.tag { font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 999px; display: inline-flex; gap: 4px; align-items: center; }
+.tag.crit { background: color-mix(in srgb, var(--critical) 18%, transparent); color: var(--bad); }
+.tag.ok { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
+.tablewrap { max-height: 340px; overflow: auto; }
+
+function vazio(id, msg) { document.getElementById(id).innerHTML = `<div class="hint" style="padding:40px 12px;text-align:center">${msg}</div>`; }
+/* tooltip */
+#tt { position: fixed; pointer-events: none; z-index: 50; background: var(--surface-2); color: var(--ink); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.25); opacity: 0; transition: opacity .08s; min-width: 140px; }
+#tt .h { font-weight: 650; margin-bottom: 4px; }
+#tt .r { display: flex; justify-content: space-between; gap: 14px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+#tt .r b { color: var(--ink); font-weight: 600; }
+.clickable { cursor: pointer; }
+footer { color: var(--ink-3); font-size: 11.5px; margin-top: 18px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+footer a { color: var(--ink-2); }
+.insight { font-size: 12px; color: var(--ink-2); border-left: 2px solid var(--accent); padding: 2px 0 2px 10px; margin-top: 8px; }
+.insight b { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">RB</div>
+      <div>
+        <h1>Controle de Ativos em Campo<span class="badge">Logística reversa</span></h1>
+        <div class="sub" id="subtitle">Equipamentos fora do estoque · cruzamento sistema de rastreio × tratativas das bases · dados fictícios</div>
+      </div>
+    </div>
+    <div class="controls">
+      <select id="fReg" aria-label="Regional"></select>
+      <select id="fTipo" aria-label="Tipo de equipamento"></select>
+      <select id="fPer" aria-label="Período">
+        <option value="26">Últimas 26 semanas</option>
+        <option value="12">Últimas 12 semanas</option>
+        <option value="4">Últimas 4 semanas</option>
+      </select>
+      <button class="ghost" id="clear">Limpar filtros</button>
+      <button class="theme-btn" id="theme" title="Alternar tema"></button>
+    </div>
+  </header>
+  <div class="chips" id="chips"></div>
+
+  <div class="grid" id="kpis"></div>
+
+  <div class="grid" style="margin-top:14px">
+    <section class="card c7" data-chart="trend">
+      <div class="card-h"><div><div class="card-t">Entradas × recuperações por semana</div><div class="card-s">Equipamentos que entraram em reversa e os que voltaram ao estoque ou à operadora</div></div><button class="tbtn" data-tbl>Tabela</button></div>
+      <div class="legend" id="lg-trend"></div><div class="viz" id="v-trend"></div>
+      <div class="insight" id="in-trend"></div>
+    </section>
+    <section class="card c5" data-chart="pos">
+      <div class="card-h"><div><div class="card-t">Posição final dos equipamentos</div><div class="card-s">Clique numa barra para filtrar o painel</div></div><button class="tbtn" data-tbl>Tabela</button></div>
+      <div class="viz" id="v-pos"></div>
+    </section>
+
+    <section class="card c7" data-chart="heat">
+      <div class="card-h"><div><div class="card-t">Regional × posição final</div><div class="card-s">Concentração de equipamentos · clique numa célula para cruzar</div></div><button class="tbtn" data-tbl>Tabela</button></div>
+      <div class="viz" id="v-heat"></div>
+    </section>
+    <section class="card c5" data-chart="aging">
+      <div class="card-h"><div><div class="card-t">Aging por regional</div><div class="card-s">Dias desde a data de suspeito · itens ainda não recuperados</div></div><button class="tbtn" data-tbl>Tabela</button></div>
+      <div class="legend" id="lg-aging"></div><div class="viz" id="v-aging"></div>
+    </section>
+
+    <section class="card c7" data-chart="sankey">
+      <div class="card-h"><div><div class="card-t">Fluxo: estado no sistema → posição final na tratativa</div><div class="card-s">Como cada estado do rastreio está sendo resolvido em campo</div></div><button class="tbtn" data-tbl>Tabela</button></div>
+      <div class="legend" id="lg-sankey"></div><div class="viz" id="v-sankey"></div>
+    </section>
+    <section class="card c5" data-chart="bubble">
+      <div class="card-h"><div><div class="card-t">Modelos: aging × valor em risco</div><div class="card-s">Tamanho = quantidade pendente · canto superior direito = prioridade</div></div><button class="tbtn" data-tbl>Tabela</button></div>
+      <div class="legend" id="lg-bubble"></div><div class="viz" id="v-bubble"></div>
+    </section>
+
+    <section class="card c12" data-chart="tec">
+      <div class="card-h"><div><div class="card-t">Técnicos com mais equipamentos pendentes</div><div class="card-s">Itens não recuperados em posse do técnico · ordenado por valor em risco</div></div></div>
+      <div class="tablewrap" id="v-tec"></div>
+    </section>
+  </div>
+  <footer>
+    <span>Dados 100% fictícios, gerados para portfólio. Nenhuma informação real de empresa ou cliente.</span>
+    <span>Renan Vicente Braga · <a href="https://github.com/bragarenan321-max/portfolio" target="_blank" rel="noopener">github.com/bragarenan321-max/portfolio</a></span>
+  </footer>
+</div>
+<div id="tt" role="tooltip"></div>
+
+<script>
+(() => {
+"use strict";
+/* ============ dados fictícios (determinísticos) ============ */
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const R = rng(20261126);
+const pick = (arr, w) => { const s = w.reduce((a, b) => a + b, 0); let x = R() * s; for (let i = 0; i < arr.length; i++) { x -= w[i]; if (x <= 0) return arr[i]; } return arr[arr.length - 1]; };
+
+const HOJE = new Date(2026, 10, 26);
+const DIA = 86400000;
+const REGIONAIS = ["Capital", "Litoral", "Interior", "ABC", "Oeste"];
+const REG_W = [34, 18, 22, 14, 12];
+const TIPOS = ["Decodificador", "Modem", "Smart card"];
+const MODELOS = [
+  { m: "DCX-4K", t: 0, v: 420, old: 1.5 }, { m: "DCX-HD", t: 0, v: 260, old: 0.7 }, { m: "NEO Box", t: 0, v: 340, old: 1.1 },
+  { m: "WR-1200", t: 1, v: 310, old: 1.3 }, { m: "WR-950", t: 1, v: 190, old: 0.6 }, { m: "FX Mesh", t: 1, v: 480, old: 2.2 },
+  { m: "SC Nano", t: 2, v: 38, old: 0.8 }, { m: "SC Plus", t: 2, v: 55, old: 1.0 } ];
+const MOD_W = [16, 12, 9, 14, 13, 6, 18, 12];
+const ESTADOS = ["Suspeito", "Análise de inventário", "Trânsito reversa", "Com defeito"];
+const EST_W = [46, 18, 24, 12];
+const POSICOES = ["Entregue no almoxarifado", "Devolvido p/ operadora", "Em processo de reversa", "Com técnico",
+                  "Pendente de habilitar", "Desconto técnico", "Sem rastreabilidade", "Perdido"];
+const RECUPERADO = new Set([0, 1]);
+// matriz estado -> chance de cada posição
+const POS_W = [
+  [30, 10, 12, 18, 4, 5, 15, 6],
+  [22, 6, 8, 14, 10, 6, 24, 10],
+  [26, 22, 30, 6, 2, 3, 8, 3],
+  [20, 34, 22, 8, 1, 6, 6, 3] ];
+const REG_FATOR = [1.0, 1.25, 1.1, 0.85, 1.3]; // regionais com mais "sem rastreabilidade"
+
+const N = 9200, itens = [];
+const tecnicos = []; for (let i = 0; i < 60; i++) tecnicos.push({ id: "TEC-" + (1040 + i * 7), reg: pick([0,1,2,3,4], REG_W) });
+for (let i = 0; i < N; i++) {
+  const reg = pick([0,1,2,3,4], REG_W);
+  const mi = pick([0,1,2,3,4,5,6,7], MOD_W);
+  const est = pick([0,1,2,3], EST_W);
+  const semana = Math.min(33, Math.floor(Math.pow(R(), MODELOS[mi].old) * 34 * (0.92 + R() * 0.08)));
+  const data = new Date(HOJE - (semana * 7 + Math.floor(R() * 7)) * DIA);
+  const w = POS_W[est].slice(); w[6] *= REG_FATOR[reg]; w[7] *= REG_FATOR[reg];
+  // itens antigos tendem a já estar resolvidos
+  if (semana > 10) { w[0] *= 1.6; w[1] *= 1.6; w[2] *= 0.5; w[3] *= 0.7; }
+  if (semana < 3) { w[0] *= 0.4; w[1] *= 0.3; w[2] *= 1.6; w[3] *= 1.4; }
+  const pos = pick([0,1,2,3,4,5,6,7], w);
+  let tec = tecnicos[Math.floor(R() * tecnicos.length)];
+  const doReg = tecnicos.filter(t => t.reg === reg); if (doReg.length) tec = doReg[Math.floor(R() * doReg.length)];
+  const aging = Math.round((HOJE - data) / DIA);
+  const recDias = !RECUPERADO.has(pos) ? null : aging < 45 ? Math.floor(aging * (0.25 + R() * 0.6)) : 4 + Math.floor(R() * 40);
+  itens.push({ reg, mi, tipo: MODELOS[mi].t, est, pos, data, semana, aging, tec: tec.id,
+    valor: MODELOS[mi].v * (0.85 + R() * 0.3), rec: RECUPERADO.has(pos), recSemana: recDias === null ? null : Math.max(0, Math.floor((aging - recDias) / 7)) });
+}
+
+/* ============ estado / filtros ============ */
+const st = { reg: null, tipo: null, per: 26, pos: null, est: null, mod: null };
+const fReg = document.getElementById("fReg"), fTipo = document.getElementById("fTipo"), fPer = document.getElementById("fPer");
+fReg.innerHTML = '<option value="">Todas as regionais</option>' + REGIONAIS.map((r, i) => `<option value="${i}">${r}</option>`).join("");
+fTipo.innerHTML = '<option value="">Todos os tipos</option>' + TIPOS.map((r, i) => `<option value="${i}">${r}</option>`).join("");
+fReg.onchange = () => { st.reg = fReg.value === "" ? null : +fReg.value; render(); };
+fTipo.onchange = () => { st.tipo = fTipo.value === "" ? null : +fTipo.value; render(); };
+fPer.onchange = () => { st.per = +fPer.value; render(); };
+document.getElementById("clear").onclick = () => { Object.assign(st, { reg: null, tipo: null, per: 26, pos: null, est: null, mod: null }); fReg.value = ""; fTipo.value = ""; fPer.value = "26"; render(); };
+
+function filtrar(skip = {}) {
+  return itens.filter(d => (skip.per || d.semana < st.per)
+    && (skip.reg || st.reg === null || d.reg === st.reg)
+    && (st.tipo === null || d.tipo === st.tipo)
+    && (skip.pos || st.pos === null || d.pos === st.pos)
+    && (skip.est || st.est === null || d.est === st.est)
+    && (skip.mod || st.mod === null || d.mi === st.mod));
+}
+
+/* ============ util ============ */
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const SER = () => ["--s1","--s2","--s3","--s4","--s5","--s6"].map(css);
+const ramp = n => css(n).split(",").map(s => s.trim());
+const fmt = n => Math.round(n).toLocaleString("pt-BR");
+const brl = n => n >= 1e6 ? "R$ " + (n / 1e6).toLocaleString("pt-BR", { maximumFractionDigits: 2 }) + " mi"
+               : n >= 1e3 ? "R$ " + (n / 1e3).toLocaleString("pt-BR", { maximumFractionDigits: 0 }) + " mil" : "R$ " + fmt(n);
+const pct = x => (x * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + "%";
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs = {}, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function svgIn(id, h) { const box = document.getElementById(id); box.innerHTML = ""; const w = box.clientWidth || 600;
+  const s = el("svg", { width: w, height: h, viewBox: `0 0 ${w} ${h}` }, box); return { s, w, h }; }
+function nice(max, n = 4) { if (max <= 0) return [0, 1]; const raw = max / n, p = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * p).find(s => s >= raw); const t = []; for (let v = 0; v <= max + step * 0.999; v += step) t.push(v); return t; }
+function luminance(hex) { const c = hex.replace("#", ""); const [r, g, b] = [0, 2, 4].map(i => { let v = parseInt(c.substr(i, 2), 16) / 255;
+  return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * r + .7152 * g + .0722 * b; }
+const inkOn = hex => luminance(hex) > 0.36 ? "#0b0b0b" : "#ffffff";
+function rr(x, y, w, h, r, side) { // retângulo com cantos arredondados só na ponta (side: 'top' | 'right')
+  r = Math.max(0, Math.min(r, side === "top" ? w / 2 : h / 2, side === "top" ? h : w));
+  if (side === "top") return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+  return `M${x},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h - r}Q${x + w},${y + h} ${x + w - r},${y + h}H${x}Z`;
+}
+
+function vazio(id, msg) { document.getElementById(id).innerHTML = `<div class="hint" style="padding:40px 12px;text-align:center">${msg}</div>`; }
+/* tooltip */
+const tt = document.getElementById("tt");
+function showTip(ev, head, rows) { tt.innerHTML = `<div class="h">${head}</div>` + rows.map(([k, v]) => `<div class="r"><span>${k}</span><b>${v}</b></div>`).join("");
+  tt.style.opacity = 1; const pad = 14; let x = ev.clientX + pad, y = ev.clientY + pad; const r = tt.getBoundingClientRect();
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - pad; if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - pad;
+  tt.style.left = x + "px"; tt.style.top = y + "px"; }
+const hideTip = () => tt.style.opacity = 0;
+function hover(node, fn) { node.addEventListener("mousemove", e => { const [h, r] = fn(); showTip(e, h, r); }); node.addEventListener("mouseleave", hideTip); }
+
+/* tabelas alternativas (acessibilidade) */
+const tabelas = {};
+document.querySelectorAll("[data-tbl]").forEach(b => b.onclick = () => {
+  const card = b.closest(".card"), k = card.dataset.chart, viz = card.querySelector(".viz");
+  if (b.dataset.on) { delete b.dataset.on; b.textContent = "Tabela"; render(); return; }
+  b.dataset.on = 1; b.textContent = "Gráfico"; const t = tabelas[k]; if (!t) return;
+  viz.innerHTML = `<div class="tablewrap"><table><thead><tr>${t.cols.map((c, i) => `<th class="${i ? "n" : ""}">${c}</th>`).join("")}</tr></thead><tbody>${
+    t.rows.map(r => `<tr>${r.map((c, i) => `<td class="${i ? "n" : ""}">${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  const lg = card.querySelector(".legend"); if (lg) lg.innerHTML = "";
+});
+const tblOn = k => !!document.querySelector(`[data-chart="${k}"] [data-tbl][data-on]`);
+
+/* ============ KPIs ============ */
+function kpis() {
+  const d = filtrar(); const pend = d.filter(x => !x.rec);
+  const janela = (arr, a, b) => arr.filter(x => x.semana >= a && x.semana < b);
+  const novos4 = d.filter(x => x.semana < 4).length;
+  const valor = pend.reduce((s, x) => s + x.valor, 0);
+  const agingMed = pend.length ? pend.reduce((s, x) => s + x.aging, 0) / pend.length : 0;
+  const recs = d.filter(x => x.rec).length, semRastro = d.filter(x => x.pos === 6).length;
+  const urg = pend.filter(x => x.aging > 60).length;
+  const defs = [
+    { l: "Em reversa (pendentes)", v: fmt(pend.length), nota: `<b>${fmt(novos4)}</b> entraram nas últimas 4 sem.`, cor: "--s1", m: a => a.filter(x => !x.rec).length },
+    { l: "Valor em risco", v: brl(valor), nota: `média de <b>${brl(pend.length ? valor / pend.length : 0)}</b> por item`, cor: "--s2", m: a => a.filter(x => !x.rec).reduce((s, x) => s + x.valor, 0) },
+    { l: "Aging médio", v: fmt(agingMed) + " dias", nota: agingMed > 30 ? `<span class="tag crit">▲ acima da meta de 30 dias</span>` : `<span class="tag ok">✓ dentro da meta</span>`, cor: "--s4", m: a => a.length },
+    { l: "Taxa de recuperação", v: pct(d.length ? recs / d.length : 0), nota: `<b>${fmt(recs)}</b> equipamentos recuperados`, cor: "--s3", m: a => a.filter(x => x.rec).length },
+    { l: "Com tratativa", v: pct(d.length ? 1 - semRastro / d.length : 0), nota: `<b>${fmt(semRastro)}</b> sem rastreabilidade`, cor: "--s6", m: a => a.filter(x => x.pos !== 6).length },
+    { l: "Urgentes (> 60 dias)", v: fmt(urg), nota: `<span class="tag crit">⚠ ${pct(pend.length ? urg / pend.length : 0)} dos pendentes</span>`, cor: "--critical", m: a => a.filter(x => !x.rec && x.aging > 60).length },
+  ];
+  const box = document.getElementById("kpis"); box.innerHTML = "";
+  defs.forEach(k => {
+    const c = document.createElement("section"); c.className = "card kpi c2";
+    c.innerHTML = `<div class="lbl"><span class="dot" style="background:var(${k.cor})"></span>${k.l}</div>
+      <div class="val">${k.v}</div><div class="row"><span class="delta flat">${k.nota}</span><span class="spark"></span></div>`;
+    box.appendChild(c);
+    const serie = []; for (let s = 11; s >= 0; s--) serie.push(k.m(d.filter(x => x.semana === s)));
+    const sw = 64, sh = 24, mx = Math.max(...serie, 1e-9), mn = Math.min(...serie);
+    const sp = el("svg", { width: sw, height: sh, viewBox: `0 0 ${sw} ${sh}` }, c.querySelector(".spark"));
+    const pts = serie.map((v, j) => [j / (serie.length - 1) * (sw - 4) + 2, sh - 3 - (mx === mn ? .5 : (v - mn) / (mx - mn)) * (sh - 6)]);
+    el("path", { d: "M" + pts.map(p => p.join(",")).join("L"), fill: "none", stroke: css(k.cor), "stroke-width": 2, "stroke-linecap": "round", "stroke-linejoin": "round" }, sp);
+    el("circle", { cx: pts[pts.length - 1][0], cy: pts[pts.length - 1][1], r: 2.5, fill: css(k.cor) }, sp);
+    hover(c.querySelector(".spark"), () => [k.l + " · 12 semanas", serie.map((v, j) => [`sem. -${11 - j}`, fmt(v)]).filter((_, j) => j % 2 === 1 || j === 11)]);
+  });
+}
+
+/* ============ 1. tendência ============ */
+function trend() {
+  const d = filtrar({ per: true }); const S = SER(); const n = st.per;
+  const ent = Array(n).fill(0), rec = Array(n).fill(0);
+  d.forEach(x => { if (x.semana < n) ent[n - 1 - x.semana]++; if (x.rec && x.recSemana !== null && x.recSemana < n) rec[n - 1 - x.recSemana]++; });
+  const lab = i => { const dt = new Date(HOJE - (n - 1 - i) * 7 * DIA); return dt.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }); };
+  tabelas.trend = { cols: ["Semana (início)", "Entradas", "Recuperados", "Saldo"], rows: ent.map((v, i) => [lab(i), fmt(v), fmt(rec[i]), fmt(v - rec[i])]) };
+  document.getElementById("lg-trend").innerHTML = `<span><i style="background:${S[0]}"></i>Entradas em reversa</span><span><i style="background:${S[2]}"></i>Recuperados</span>`;
+  const tE = ent.slice(-4).reduce((a, b) => a + b, 0), tR = rec.slice(-4).reduce((a, b) => a + b, 0);
+  document.getElementById("in-trend").innerHTML = tR >= tE ? `Nas últimas 4 semanas a operação <b>recuperou mais do que entrou</b> (${fmt(tR)} × ${fmt(tE)}): o estoque em reversa está diminuindo.`
+    : `Nas últimas 4 semanas <b>entraram ${fmt(tE - tR)} equipamentos a mais</b> do que foram recuperados: o passivo está crescendo.`;
+  if (tblOn("trend")) return;
+  const { s, w, h } = svgIn("v-trend", 250); const m = { l: 40, r: 70, t: 10, b: 24 };
+  const iw = w - m.l - m.r, ih = h - m.t - m.b; const ticks = nice(Math.max(...ent, ...rec)); const ymax = ticks[ticks.length - 1];
+  const X = i => m.l + (n === 1 ? iw / 2 : i / (n - 1) * iw), Y = v => m.t + ih - v / ymax * ih;
+  const ax = el("g", { class: "ax" }, s);
+  ticks.forEach(t => { el("line", { x1: m.l, x2: m.l + iw, y1: Y(t), y2: Y(t), class: t ? "gl" : "bl" }, ax);
+    el("text", { x: m.l - 8, y: Y(t) + 3.5, "text-anchor": "end" }, ax).textContent = fmt(t); });
+  const passo = Math.ceil(n / 7); for (let i = 0; i < n; i += passo) el("text", { x: X(i), y: h - 6, "text-anchor": "middle" }, ax).textContent = lab(i);
+  const area = el("path", { d: `M${X(0)},${Y(0)}` + ent.map((v, i) => `L${X(i)},${Y(v)}`).join("") + `L${X(n - 1)},${Y(0)}Z`, fill: S[0], opacity: .10 }, s);
+  [[ent, S[0], "Entradas"], [rec, S[2], "Recuperados"]].forEach(([arr, c, nome]) => {
+    el("path", { d: "M" + arr.map((v, i) => `${X(i)},${Y(v)}`).join("L"), fill: "none", stroke: c, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }, s);
+    const yv = Y(arr[n - 1]); el("circle", { cx: X(n - 1), cy: yv, r: 4, fill: c, stroke: css("--surface"), "stroke-width": 2 }, s);
+    el("text", { x: X(n - 1) + 8, y: yv + 4, fill: css("--ink-2"), "font-size": 11 }, s).textContent = `${nome} ${fmt(arr[n - 1])}`;
+  });
+  // crosshair
+  const cross = el("line", { y1: m.t, y2: m.t + ih, stroke: css("--axis"), "stroke-dasharray": "3 3", opacity: 0 }, s);
+  const dots = [S[0], S[2]].map(c => el("circle", { r: 4.5, fill: c, stroke: css("--surface"), "stroke-width": 2, opacity: 0 }, s));
+  const hit = el("rect", { x: m.l, y: m.t, width: iw, height: ih, fill: "transparent" }, s);
+  hit.addEventListener("mousemove", e => { const r = s.getBoundingClientRect(); const i = Math.max(0, Math.min(n - 1, Math.round((e.clientX - r.left - m.l) / iw * (n - 1))));
+    cross.setAttribute("x1", X(i)); cross.setAttribute("x2", X(i)); cross.setAttribute("opacity", 1);
+    [ent, rec].forEach((a, j) => { dots[j].setAttribute("cx", X(i)); dots[j].setAttribute("cy", Y(a[i])); dots[j].setAttribute("opacity", 1); });
+    showTip(e, "Semana de " + lab(i), [["Entradas", fmt(ent[i])], ["Recuperados", fmt(rec[i])], ["Saldo", fmt(ent[i] - rec[i])]]); });
+  hit.addEventListener("mouseleave", () => { hideTip(); cross.setAttribute("opacity", 0); dots.forEach(d => d.setAttribute("opacity", 0)); });
+}
+
+/* ============ 2. posição final (barras) ============ */
+function posicao() {
+  const d = filtrar({ pos: true }); const cont = POSICOES.map((_, i) => d.filter(x => x.pos === i).length); const tot = d.length || 1;
+  const ordem = POSICOES.map((p, i) => i).sort((a, b) => cont[b] - cont[a]);
+  tabelas.pos = { cols: ["Posição final", "Equipamentos", "%"], rows: ordem.map(i => [POSICOES[i], fmt(cont[i]), pct(cont[i] / tot)]) };
+  if (tblOn("pos")) return;
+  const rowH = 30, { s, w } = svgIn("v-pos", ordem.length * rowH + 6); const lw = 168, rw = 92, iw = w - lw - rw; const mx = Math.max(...cont, 1);
+  ordem.forEach((i, k) => { const y = k * rowH + 4; const g = el("g", { class: "clickable" }, s); const sel = st.pos === i;
+    el("rect", { x: 0, y: y - 2, width: w, height: rowH - 2, fill: sel ? css("--chip") : "transparent", rx: 6 }, g);
+    el("text", { x: 8, y: y + 15, fill: css("--ink"), "font-size": 12 }, g).textContent = POSICOES[i];
+    const bw = Math.max(2, cont[i] / mx * iw);
+    el("path", { d: rr(lw, y + 6, bw, 14, 4, "right"), fill: i === 6 || i === 7 ? css("--critical") : css("--s1"), opacity: st.pos === null || sel ? 1 : .35 }, g);
+    el("text", { x: lw + bw + 8, y: y + 17, fill: css("--ink-2"), "font-size": 11.5, "font-variant-numeric": "tabular-nums" }, g).textContent = `${fmt(cont[i])} · ${pct(cont[i] / tot)}`;
+    hover(g, () => [POSICOES[i], [["Equipamentos", fmt(cont[i])], ["Participação", pct(cont[i] / tot)], ["Clique", sel ? "remover filtro" : "filtrar"]]]);
+    g.onclick = () => { st.pos = sel ? null : i; render(); };
+  });
+}
+
+/* ============ 3. heatmap ============ */
+function heat() {
+  const d = filtrar({ reg: true, pos: true }); const M = REGIONAIS.map((_, r) => POSICOES.map((_, p) => d.filter(x => x.reg === r && x.pos === p).length));
+  tabelas.heat = { cols: ["Regional", ...POSICOES], rows: M.map((row, r) => [REGIONAIS[r], ...row.map(fmt)]) };
+  if (tblOn("heat")) return;
+  const seq = ramp("--seq"); const mx = Math.max(...M.flat(), 1);
+  const lw = 72, th = 54, cellH = 38; const { s, w } = svgIn("v-heat", th + REGIONAIS.length * cellH + 4); const cw = (w - lw) / POSICOES.length;
+  POSICOES.forEach((p, j) => { const t = el("text", { x: lw + j * cw + cw / 2, y: th - 8, "text-anchor": "middle", fill: css("--ink-2"), "font-size": 10.5 }, s);
+    const words = p.split(" "); const half = Math.ceil(words.length / 2);
+    [words.slice(0, half).join(" "), words.slice(half).join(" ")].filter(Boolean).forEach((ln, k, arr) => { const ts = el("tspan", { x: lw + j * cw + cw / 2, dy: k === 0 ? -(arr.length - 1) * 12 : 12 }, t); ts.textContent = ln; }); });
+  M.forEach((row, r) => { el("text", { x: 0, y: th + r * cellH + cellH / 2 + 4, fill: css("--ink"), "font-size": 12 }, s).textContent = REGIONAIS[r];
+    row.forEach((v, j) => { const idx = Math.min(seq.length - 1, Math.floor(v / mx * (seq.length - 1) + 0.0001)); const col = seq[Math.max(v ? 1 : 0, idx)];
+      const sel = (st.reg === null || st.reg === r) && (st.pos === null || st.pos === j);
+      const g = el("g", { class: "clickable" }, s);
+      el("rect", { x: lw + j * cw + 1, y: th + r * cellH + 1, width: cw - 2, height: cellH - 2, rx: 5, fill: col, opacity: sel ? 1 : .3 }, g);
+      el("text", { x: lw + j * cw + cw / 2, y: th + r * cellH + cellH / 2 + 4, "text-anchor": "middle", "font-size": 11.5, fill: inkOn(col), opacity: sel ? 1 : .5, "font-variant-numeric": "tabular-nums" }, g).textContent = fmt(v);
+      const linha = row.reduce((a, b) => a + b, 0) || 1;
+      hover(g, () => [`${REGIONAIS[r]} · ${POSICOES[j]}`, [["Equipamentos", fmt(v)], ["% da regional", pct(v / linha)]]]);
+      g.onclick = () => { const on = st.reg === r && st.pos === j; st.reg = on ? null : r; st.pos = on ? null : j; fReg.value = st.reg === null ? "" : st.reg; render(); };
+    }); });
+}
+
+/* ============ 4. aging empilhado ============ */
+const FAIXAS = ["0–30 dias", "31–60 dias", "61–90 dias", "> 90 dias"];
+const faixa = a => a <= 30 ? 0 : a <= 60 ? 1 : a <= 90 ? 2 : 3;
+function aging() {
+  const d = filtrar({ reg: true }).filter(x => !x.rec); const ord = ramp("--ord");
+  const M = REGIONAIS.map((_, r) => FAIXAS.map((_, f) => d.filter(x => x.reg === r && faixa(x.aging) === f).length));
+  tabelas.aging = { cols: ["Regional", ...FAIXAS, "Total"], rows: M.map((row, r) => [REGIONAIS[r], ...row.map(fmt), fmt(row.reduce((a, b) => a + b, 0))]) };
+  document.getElementById("lg-aging").innerHTML = FAIXAS.map((f, i) => `<span><i style="background:${ord[i]}"></i>${f}</span>`).join("");
+  if (tblOn("aging")) return;
+  if (!d.length) { vazio("v-aging", "Nenhum equipamento pendente para os filtros atuais."); return; }
+  const rowH = 46, { s, w } = svgIn("v-aging", REGIONAIS.length * rowH + 4); const lw = 66, rw = 48, iw = w - lw - rw;
+  const tot = M.map(r => r.reduce((a, b) => a + b, 0)); const mx = Math.max(...tot, 1);
+  M.forEach((row, r) => { const y = r * rowH + 10; const sel = st.reg === null || st.reg === r;
+    el("text", { x: 0, y: y + 15, fill: css("--ink"), "font-size": 12 }, s).textContent = REGIONAIS[r];
+    let x = lw; row.forEach((v, f) => { const bw = v / mx * iw; if (bw <= 0) return; const ultimo = row.slice(f + 1).every(z => z === 0);
+      const seg = el("path", { d: ultimo ? rr(x, y + 2, Math.max(bw - 2, 1), 20, 4, "right") : `M${x},${y + 2}h${Math.max(bw - 2, 1)}v20h${-Math.max(bw - 2, 1)}Z`,
+        fill: ord[f], opacity: sel ? 1 : .3, class: "clickable" }, s);
+      hover(seg, () => [`${REGIONAIS[r]} · ${FAIXAS[f]}`, [["Pendentes", fmt(v)], ["% da regional", pct(v / (tot[r] || 1))]]]);
+      seg.onclick = () => { st.reg = st.reg === r ? null : r; fReg.value = st.reg === null ? "" : st.reg; render(); };
+      x += bw; });
+    el("text", { x: lw + tot[r] / mx * iw + 6, y: y + 16, fill: css("--ink-2"), "font-size": 11.5, "font-variant-numeric": "tabular-nums" }, s).textContent = fmt(tot[r]);
+    const crit = (row[2] + row[3]) / (tot[r] || 1);
+    el("text", { x: lw, y: y + 36, fill: css("--ink-3"), "font-size": 10.5 }, s).textContent = `${pct(crit)} acima de 60 dias`;
+  });
+}
+
+/* ============ 5. sankey ============ */
+function sankey() {
+  const d = filtrar({ est: true, pos: true }); const S = SER();
+  const F = ESTADOS.map((_, e) => POSICOES.map((_, p) => d.filter(x => x.est === e && x.pos === p).length));
+  tabelas.sankey = { cols: ["Estado → Posição", ...POSICOES], rows: F.map((r, e) => [ESTADOS[e], ...r.map(fmt)]) };
+  document.getElementById("lg-sankey").innerHTML = ESTADOS.map((e, i) => `<span><i style="background:${S[i]}"></i>${e}</span>`).join("");
+  if (tblOn("sankey")) return;
+  const { s, w, h } = svgIn("v-sankey", 340); const tot = d.length || 1; const nw = 10, gap = 9, lx = 130, rx = w - 215;
+  const avail = h - 10 - gap * (POSICOES.length - 1); const k = avail / tot;
+  const eT = F.map(r => r.reduce((a, b) => a + b, 0)), pT = POSICOES.map((_, p) => F.reduce((a, r) => a + r[p], 0));
+  const availL = h - 10 - gap * (ESTADOS.length - 1); const kL = availL / tot; const kk = Math.min(k, kL);
+  let y = 5; const eY = eT.map(v => { const a = y; y += v * kk + gap; return a; });
+  y = 5; const pY = pT.map(v => { const a = y; y += v * kk + gap; return a; });
+  const oL = eY.slice(), oR = pY.slice();
+  F.forEach((row, e) => row.forEach((v, p) => { if (!v) return; const t = v * kk; const y0 = oL[e] + t / 2, y1 = oR[p] + t / 2;
+    const sel = (st.est === null || st.est === e) && (st.pos === null || st.pos === p);
+    const path = el("path", { d: `M${lx + nw},${y0}C${(lx + rx) / 2},${y0} ${(lx + rx) / 2},${y1} ${rx},${y1}`, fill: "none", stroke: S[e],
+      "stroke-width": Math.max(1, t), opacity: sel ? .38 : .08, class: "clickable" }, s);
+    path.addEventListener("mouseenter", () => path.setAttribute("opacity", .7)); path.addEventListener("mouseleave", () => path.setAttribute("opacity", sel ? .38 : .08));
+    hover(path, () => [`${ESTADOS[e]} → ${POSICOES[p]}`, [["Equipamentos", fmt(v)], ["% do estado", pct(v / (eT[e] || 1))]]]);
+    path.onclick = () => { const on = st.est === e && st.pos === p; st.est = on ? null : e; st.pos = on ? null : p; render(); };
+    oL[e] += t; oR[p] += t; }));
+  eT.forEach((v, e) => { el("rect", { x: lx, y: eY[e], width: nw, height: Math.max(1, v * kk), rx: 3, fill: S[e] }, s);
+    const t = el("text", { x: lx - 8, y: eY[e] + v * kk / 2 + 4, "text-anchor": "end", fill: css("--ink"), "font-size": 11.5 }, s); t.textContent = ESTADOS[e];
+    el("text", { x: lx - 8, y: eY[e] + v * kk / 2 + 17, "text-anchor": "end", fill: css("--ink-2"), "font-size": 10.5 }, s).textContent = fmt(v); });
+  pT.forEach((v, p) => { el("rect", { x: rx, y: pY[p], width: nw, height: Math.max(1, v * kk), rx: 3, fill: css("--axis") }, s);
+    const t = el("text", { x: rx + nw + 8, y: pY[p] + v * kk / 2 + 4, fill: css("--ink"), "font-size": 11.5 }, s); t.textContent = POSICOES[p] + "  ";
+    const ts = el("tspan", { fill: css("--ink-2"), "font-size": 10.5 }, t); ts.textContent = fmt(v); });
+}
+
+/* ============ 6. bolhas ============ */
+function bubble() {
+  const d = filtrar({ mod: true }).filter(x => !x.rec); const S = SER();
+  const pts = MODELOS.map((m, i) => { const a = d.filter(x => x.mi === i); return { i, m: m.m, t: m.t, q: a.length,
+    v: a.reduce((s, x) => s + x.valor, 0), ag: a.length ? a.reduce((s, x) => s + x.aging, 0) / a.length : 0 }; }).filter(p => p.q > 0);
+  tabelas.bubble = { cols: ["Modelo", "Tipo", "Pendentes", "Valor em risco", "Aging médio"], rows: pts.slice().sort((a, b) => b.v - a.v).map(p => [p.m, TIPOS[p.t], fmt(p.q), brl(p.v), fmt(p.ag) + " d"]) };
+  const tiposVis = [...new Set(pts.map(p => p.t))];
+  document.getElementById("lg-bubble").innerHTML = TIPOS.map((t, i) => tiposVis.includes(i) ? `<span><i style="background:${S[i]}"></i>${t}</span>` : "").join("");
+  if (tblOn("bubble")) return;
+  if (!pts.length) { vazio("v-bubble", "Nenhum equipamento pendente para os filtros atuais (itens recuperados não entram neste gráfico)."); return; }
+  const { s, w, h } = svgIn("v-bubble", 310); const m = { l: 52, r: 24, t: 34, b: 34 }; const iw = w - m.l - m.r, ih = h - m.t - m.b;
+  const xt = nice(Math.max(...pts.map(p => p.ag), 10)), yt = nice(Math.max(...pts.map(p => p.v), 1));
+  const X = v => m.l + v / xt[xt.length - 1] * iw, Y = v => m.t + ih - v / yt[yt.length - 1] * ih; const qm = Math.max(...pts.map(p => p.q), 1);
+  const ax = el("g", { class: "ax" }, s);
+  yt.forEach(t => { el("line", { x1: m.l, x2: m.l + iw, y1: Y(t), y2: Y(t), class: t ? "gl" : "bl" }, ax); el("text", { x: m.l - 6, y: Y(t) + 3.5, "text-anchor": "end" }, ax).textContent = brl(t).replace("R$ ", ""); });
+  xt.forEach(t => el("text", { x: X(t), y: m.t + ih + 16, "text-anchor": "middle" }, ax).textContent = fmt(t));
+  el("text", { x: m.l + iw, y: h - 2, "text-anchor": "end" }, ax).textContent = "aging médio (dias) →";
+  el("text", { x: m.l - 46, y: m.t - 22 }, ax).textContent = "R$ em risco ↑";
+  const caixas = [], bate = (b) => caixas.some(c => b.x < c.x + c.w && b.x + b.w > c.x && b.y < c.y + c.h && b.y + b.h > c.y);
+  const circs = pts.map(p => ({ x: X(p.ag), y: Y(p.v), r: 6 + Math.sqrt(p.q / qm) * 22 }));
+  const cobreBolha = (b) => circs.some(c => { const dx = Math.max(b.x - c.x, 0, c.x - (b.x + b.w)), dy = Math.max(b.y - c.y, 0, c.y - (b.y + b.h)); return dx * dx + dy * dy < c.r * c.r * 0.9; });
+  pts.sort((a, b) => b.q - a.q).forEach(p => { const r = 6 + Math.sqrt(p.q / qm) * 22; const sel = st.mod === null || st.mod === p.i;
+    const g = el("g", { class: "clickable" }, s);
+    el("circle", { cx: X(p.ag), cy: Y(p.v), r, fill: S[p.t], "fill-opacity": sel ? .78 : .18, stroke: css("--surface"), "stroke-width": 2 }, g);
+    const lw = p.m.length * 6.2 + 4, cx = X(p.ag), cy = Y(p.v);
+    const opcoes = [[cx - lw / 2, cy - r - 17], [cx - lw / 2, cy + r + 3], [cx + r + 4, cy - 7], [cx - r - 4 - lw, cy - 7]];
+    const ok = opcoes.map(([x, y]) => ({ x, y, w: lw, h: 14 })).find(b => !bate(b) && !cobreBolha(b) && b.x >= 0 && b.x + b.w <= w);
+    if (ok) { caixas.push(ok); el("text", { x: ok.x + 2, y: ok.y + 11, fill: css("--ink"), "font-size": 11, opacity: sel ? 1 : .4 }, g).textContent = p.m; }
+    hover(g, () => [`${p.m} · ${TIPOS[p.t]}`, [["Pendentes", fmt(p.q)], ["Valor em risco", brl(p.v)], ["Aging médio", fmt(p.ag) + " dias"]]]);
+    g.onclick = () => { st.mod = st.mod === p.i ? null : p.i; render(); }; });
+}
+
+/* ============ 7. técnicos ============ */
+function tec() {
+  const d = filtrar().filter(x => !x.rec && x.pos === 3); const map = new Map();
+  d.forEach(x => { const o = map.get(x.tec) || { id: x.tec, reg: x.reg, q: 0, v: 0, ag: 0, u: 0 }; o.q++; o.v += x.valor; o.ag += x.aging; if (x.aging > 60) o.u++; map.set(x.tec, o); });
+  const rows = [...map.values()].sort((a, b) => b.v - a.v).slice(0, 12); const mx = Math.max(...rows.map(r => r.v), 1);
+  document.getElementById("v-tec").innerHTML = rows.length ? `<table><thead><tr><th>Técnico</th><th>Regional</th><th class="n">Itens</th><th>Valor em risco</th><th class="n">Aging médio</th><th>Situação</th></tr></thead><tbody>${
+    rows.map(r => `<tr><td>${r.id}</td><td>${REGIONAIS[r.reg]}</td><td class="n">${fmt(r.q)}</td>
+      <td><div class="bar-cell"><span class="b" style="width:${Math.max(4, r.v / mx * 160)}px"></span>${brl(r.v)}</div></td>
+      <td class="n">${fmt(r.ag / r.q)} d</td>
+      <td>${r.u ? `<span class="tag crit">⚠ ${r.u} acima de 60 dias</span>` : '<span class="tag ok">✓ dentro do prazo</span>'}</td></tr>`).join("")}</tbody></table>`
+    : `<div class="hint" style="padding:12px">Nenhum equipamento com técnico para os filtros atuais.</div>`;
+}
+
+/* ============ chips + render ============ */
+function chips() {
+  const c = []; if (st.reg !== null) c.push(["Regional", REGIONAIS[st.reg], () => { st.reg = null; fReg.value = ""; }]);
+  if (st.tipo !== null) c.push(["Tipo", TIPOS[st.tipo], () => { st.tipo = null; fTipo.value = ""; }]);
+  if (st.pos !== null) c.push(["Posição", POSICOES[st.pos], () => st.pos = null]);
+  if (st.est !== null) c.push(["Estado", ESTADOS[st.est], () => st.est = null]);
+  if (st.mod !== null) c.push(["Modelo", MODELOS[st.mod].m, () => st.mod = null]);
+  const box = document.getElementById("chips"); box.innerHTML = c.length ? "" : '<span class="hint">Dica: clique nas barras, células, fluxos e bolhas para cruzar os dados entre os gráficos.</span>';
+  c.forEach(([k, v, off]) => { const s = document.createElement("span"); s.className = "chip"; s.innerHTML = `${k}: <b>${v}</b><button aria-label="remover">×</button>`;
+    s.querySelector("button").onclick = () => { off(); render(); }; box.appendChild(s); });
+}
+function render() { hideTip(); chips(); kpis(); trend(); posicao(); heat(); aging(); sankey(); bubble(); tec(); }
+
+const themeBtn = document.getElementById("theme");
+function setThemeLabel() { const dark = document.documentElement.dataset.theme === "dark"; themeBtn.textContent = dark ? "☀ Modo claro" : "☾ Modo escuro"; }
+themeBtn.onclick = () => { const r = document.documentElement; r.dataset.theme = r.dataset.theme === "dark" ? "light" : "dark"; setThemeLabel(); render(); };
+setThemeLabel();
+document.getElementById("subtitle").textContent += " · atualizado em " + HOJE.toLocaleDateString("pt-BR");
+let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 120); });
+render();
+})();
+</script>
+</body>
+</html>
